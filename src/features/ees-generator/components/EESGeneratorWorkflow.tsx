@@ -2484,7 +2484,7 @@ function CitilinkOptionsForm({ data, onChange }: { data: CitilinkOptionsData; on
             <CBox key={r} checked={data.reasonOfEvaluation.includes(r)}
               onChange={() => set("reasonOfEvaluation", toggleArr(data.reasonOfEvaluation, r))}
               label={r}
-              ai={r === "To Comply with Government/ Authority Regulatory Requirement."} />
+              ai={r === "To Comply with Regulatory"} />
           ))}
         </div>
       </CSection>
