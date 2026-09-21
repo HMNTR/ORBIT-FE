@@ -15,18 +15,19 @@ export const CITILINK_COMPONENT_TYPES = [
   "Part",
 ] as const;
 
+export const CITILINK_DEFAULT_REASON_OF_EVALUATION = [
+  
+]
+
 export const CITILINK_REASON_OPTIONS = [
   "Affects A/C Operation",
   "To Meet Company policy",
   "Improve A/C Performance",
-  "To Comply with Government/ Authority Regulatory Requirement.",
+  "To Comply with Regulatory",
   "Pax or Crew Satisfaction",
   "Improve Maintainability",
   "Improve Reliability",
-  "Safety",
 ] as const;
-
-export const CITILINK_DEFAULT_REASON_OF_EVALUATION = ["Improve Reliability"] as const;
 
 export const CITILINK_MAINTENANCE_OPTIONS = [
   "To be performed prior to certain date",
@@ -37,14 +38,13 @@ export const CITILINK_MAINTENANCE_OPTIONS = [
 
 export const CITILINK_ENGINEERING_ACTIONS = ["Yes", "No", "Hold/Postpone"] as const;
 export const CITILINK_CONSEQUENCES = ["Affected", "Not Affected"] as const;
-export const CITILINK_ACCOMPLISHMENT_METHODS = ["Modification", "Inspection", "Other"] as const;
+export const CITILINK_ACCOMPLISHMENT_METHODS = ["Modification", "Inspection", "Others"] as const;
 export const CITILINK_INSPECTION_TYPES = ["One Time", "Recurring"] as const;
 export const CITILINK_FURTHER_IMPLEMENTATION = [
   "Technical Order",
   "Engineering Information",
   "M.S. Revision",
   "Manual revision",
-  "Others",
   "Others (shop visit)",
 ] as const;
 export const CITILINK_MANAGEMENT_APPROVAL = ["TEA", "WQR", "DE"] as const;
@@ -99,43 +99,15 @@ export function getCitilinkField(
 }
 
 export function citilinkSources(input: UnknownRecord): unknown[] {
-  // An SB without a complete AI classification must start as a genuinely
-  // manual form. Do not let nested OCR, AI-summary, generated-EES, or SB data
-  // silently populate fields that the engineer is expected to complete.
-  if (input.strictManualInput === true) {
-    return [input];
-  }
-
   const options = isRecord(input.citilinkOptions) ? input.citilinkOptions : {};
   const document = isRecord(input.generatedEesDocument) ? input.generatedEesDocument : {};
   const selectedSB = isRecord(input.selectedSB) ? input.selectedSB : {};
-  const summaryEnvelope = isRecord(input.aiSummary) ? input.aiSummary : {};
-  const summary = isRecord(summaryEnvelope.aiSummary)
-    ? summaryEnvelope.aiSummary
-    : summaryEnvelope;
-  const documentSummaryEnvelope = isRecord(document.aiSummary) ? document.aiSummary : {};
-  const documentSummary = isRecord(documentSummaryEnvelope.aiSummary)
-    ? documentSummaryEnvelope.aiSummary
-    : documentSummaryEnvelope;
-  const selectedSbSummaryEnvelope = isRecord(selectedSB.aiSummary) ? selectedSB.aiSummary : {};
-  const selectedSbSummary = isRecord(selectedSbSummaryEnvelope.aiSummary)
-    ? selectedSbSummaryEnvelope.aiSummary
-    : selectedSbSummaryEnvelope;
   const engineeringRec = isRecord(selectedSB.engineeringRec)
     ? selectedSB.engineeringRec
     : isRecord(input.engineeringRec)
       ? input.engineeringRec
       : {};
-  return [
-    input,
-    options,
-    document,
-    summary,
-    documentSummary,
-    selectedSB,
-    selectedSbSummary,
-    engineeringRec,
-  ];
+  return [input, options, document, selectedSB, engineeringRec];
 }
 
 export function normalizeUnitConcern(value: unknown): string[] {
@@ -178,17 +150,18 @@ export function normalizeReasonOfEvaluation(value: unknown): string[] {
     } else if (normalized.includes("improve a c performance") || normalized.includes("improve ac performance")) {
       result.push("Improve A/C Performance");
     } else if (normalized === "regulatory" || normalized.includes("regulatory requirement")) {
-      result.push("To Comply with Government/ Authority Regulatory Requirement.");
+      result.push("To Comply with Regulatory");
     } else if (normalized.includes("pax or crew satisfaction")) {
       result.push("Pax or Crew Satisfaction");
     } else if (normalized.includes("improve maintainability")) {
       result.push("Improve Maintainability");
     } else if (normalized.includes("improve reliability")) {
       result.push("Improve Reliability");
-    } else if (normalized === "safety") {
-      result.push("Safety");
     }
   }
+
+  // CT-3-18.1 always prints Improve Reliability; Safety intentionally stays blank.
+  result.push("Improve Reliability");
   return unique(result);
 }
 
@@ -258,6 +231,7 @@ export function normalizeConsequence(value: unknown): string[] {
   return [];
 }
 
+
 export function normalizeAccomplishmentMethod(value: unknown): string[] {
   const values = citilinkList(value);
   for (const item of values) {
@@ -265,14 +239,14 @@ export function normalizeAccomplishmentMethod(value: unknown): string[] {
     if (["mod", "rep", "software update", "modification"].includes(normalized)) return ["Modification"];
     if (normalized === "insp" || normalized === "inspection") return ["Inspection"];
   }
-  return ["Other"];
+  return ["Others"];
 }
 
 export function accomplishmentMethodCode(value: unknown): string | undefined {
   switch (normalizeAccomplishmentMethod(value)[0]) {
     case "Modification": return "MOD";
     case "Inspection": return "INSP";
-    case "Other": return "OTHER";
+    case "Others": return "OTHER";
     default: return undefined;
   }
 }
@@ -313,10 +287,8 @@ export function normalizeFurtherImplementation(value: unknown): string[] {
       result.push("M.S. Revision");
     } else if (normalized === "manual revision") {
       result.push("Manual revision");
-    } else if (normalized.includes("shop visit")) {
+    } else if (normalized === "others" || normalized === "other" || normalized.includes("shop visit")) {
       result.push("Others (shop visit)");
-    } else if (normalized === "others" || normalized === "other") {
-      result.push("Others");
     }
   }
   return unique(result);
@@ -329,33 +301,15 @@ export function normalizeManagementApproval(value: unknown): string[] {
 
 export function isCitilinkEes(input: UnknownRecord): boolean {
   const selectedSB = isRecord(input.selectedSB) ? input.selectedSB : {};
-  const document = isRecord(input.generatedEesDocument)
-    ? input.generatedEesDocument
-    : {};
-  const fleetTemplate = isRecord(input.fleetTemplate)
-    ? input.fleetTemplate
-    : {};
   const marker = [
     input.eesTemplate,
-    input.selectedTemplate,
     input.airline,
     input.operator,
-    document.eesTemplate,
-    fleetTemplate.template,
     selectedSB.eesTemplate,
     selectedSB.operator,
   ].map(item => token(item)).join(" ");
   return marker.includes("citilink")
     || marker.includes("qg")
     || isRecord(input.citilinkOptions)
-    || [
-      "unitConcern",
-      "reasonOfEvaluation",
-      "managementApproval",
-      "partClassification",
-      "maintenanceLevel",
-      "accomplishmentMethod",
-      "engineeringAction",
-      "furtherImplementation",
-    ].some(key => input[key] !== undefined);
+    || ["unitConcern", "reasonOfEvaluation", "managementApproval"].some(key => input[key] !== undefined);
 }

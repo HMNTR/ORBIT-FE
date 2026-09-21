@@ -85,8 +85,19 @@ export default function LoginPage() {
       />
 
       <div className="relative z-10 grid min-h-screen w-full max-w-full lg:h-full lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]">
-        <section className=" relative z-10 flex min-h-screen items-center justify-center bg-white px-[clamp(24px,4vw,64px)] py-[clamp(32px,5vh,48px)] text-[#07143F] lg:min-h-0 lg:min-w-0 lg:rounded-r-[24px]">
-          <div className="mx-auto w-full max-w-[420px] mt-10">
+        <section className="relative z-10 flex min-h-screen flex-col justify-between bg-white px-[clamp(24px,4vw,64px)] py-[clamp(32px,5vh,48px)] text-[#07143F] lg:min-h-0 lg:min-w-0 lg:rounded-r-[24px]">
+          <div>
+            <Image
+              src="/logos/gmf-aeroasia.png"
+              alt="GMF AeroAsia"
+              width={241}
+              height={51}
+              priority
+              className="h-auto w-[140px] brightness-0 xl:w-[160px]"
+            />
+          </div>
+
+          <div className="mx-auto my-auto w-full max-w-[420px] py-4">
             <div className="mb-3 text-center">
               <Image
                 src="/logos/Logo_Orbit_Biru.png"
@@ -196,24 +207,17 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="mt-10 text-center text-[10px] text-slate-400 lg:hidden">
-              © 2026 ORBIT · GMF AeroAsia Engineering
-            </p>
           </div>
+
+          <p className="mt-6 text-center text-[10px] text-slate-400">
+            © 2026 ORBIT · GMF AeroAsia Engineering
+          </p>
         </section>
 
         <section className="relative hidden min-h-0 min-w-0 overflow-hidden text-white lg:block">
           <div className="relative z-10 flex h-full flex-col px-12 py-12 xl:px-16 2xl:px-24 2xl:py-16">
             <div className="ml-auto w-full max-w-[510px] text-right">
-              <Image
-                src="/logos/gmf-aeroasia.png"
-                alt="GMF AeroAsia"
-                width={241}
-                height={51}
-                priority
-                className=" ml-auto h-auto w-[180px] brightness-0 invert xl:w-[150px]"
-              />
-              <div className="ml-auto mt-5 h-1 w-[210px] rounded-full bg-gradient-to-r from-white/70 to-[#0B8BFF]" />
+              <div className="ml-auto h-1 w-[210px] rounded-full bg-gradient-to-r from-white/70 to-[#0B8BFF]" />
               <h2 className="mt-5 text-[28px] font-bold leading-[1.35] tracking-[0.01em] text-white xl:text-[34px] 2xl:text-[39px]">
                 Operational Review of
                 <br />

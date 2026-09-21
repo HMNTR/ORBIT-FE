@@ -69,3 +69,9 @@ Thumbs.db
 # Local AI/editor metadata
 /.cursor/
 /.windsurf/
+
+# Playwright
+node_modules/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
